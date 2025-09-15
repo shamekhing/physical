@@ -275,21 +275,28 @@ class UIManager {
         messagesList.style.display = 'block';
         noMessages.style.display = 'none';
 
-        messagesList.innerHTML = likedUsers.map(user => `
-            <div class="message-conversation" data-user-id="${user.id}">
-                <div class="conversation-avatar">${this.getUserAvatar(user)}</div>
-                <div class="conversation-info">
-                    <div class="conversation-name">${user.username}</div>
-                    <div class="conversation-preview">
-                        ${user.lastMessage || 'Start a conversation...'}
+        messagesList.innerHTML = likedUsers.map(user => {
+            // Get the last message for this user
+            const conversations = Utils.storage.get('conversations') || {};
+            const userMessages = conversations[user.id] || [];
+            const lastMessage = userMessages.length > 0 ? userMessages[userMessages.length - 1] : null;
+            
+            return `
+                <div class="message-conversation" data-user-id="${user.id}">
+                    <div class="conversation-avatar">${this.getUserAvatar(user)}</div>
+                    <div class="conversation-info">
+                        <div class="conversation-name">${user.username}</div>
+                        <div class="conversation-preview">
+                            ${lastMessage ? lastMessage.text : 'Start a conversation...'}
+                        </div>
+                    </div>
+                    <div class="conversation-meta">
+                        <div class="conversation-time">${lastMessage ? Utils.formatTime(lastMessage.timestamp) : Utils.formatTime(user.likedAt)}</div>
+                        <div class="conversation-status ${this.getUserStatus(user)}"></div>
                     </div>
                 </div>
-                <div class="conversation-meta">
-                    <div class="conversation-time">${Utils.formatTime(user.likedAt)}</div>
-                    <div class="conversation-status ${this.getUserStatus(user)}"></div>
-                </div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
 
         // Add click handlers for conversations
         messagesList.querySelectorAll('.message-conversation').forEach(conversation => {
@@ -326,7 +333,11 @@ class UIManager {
         const user = likedUsers.find(u => u.id === userId);
         
         if (user) {
-            // Show the chat section
+            // Store the current chat user
+            Utils.storage.set('currentChatUser', user);
+            
+            // Go back to main screen and show chat
+            this.showMainScreen();
             this.showChatSection(user);
         }
     }
@@ -346,7 +357,41 @@ class UIManager {
             
             if (chatUserName) chatUserName.textContent = user.username;
             if (chatUserDistance) chatUserDistance.textContent = Utils.formatDistance(user.distance) + ' away';
+            
+            // Clear and populate chat messages
+            this.populateChatMessages(user);
         }
+    }
+
+    populateChatMessages(user) {
+        const chatMessages = document.getElementById('chat-messages');
+        if (!chatMessages) return;
+
+        // Get conversation history for this user
+        const conversations = Utils.storage.get('conversations') || {};
+        const userMessages = conversations[user.id] || [];
+
+        if (userMessages.length === 0) {
+            chatMessages.innerHTML = `
+                <div class="message system">
+                    <div class="message-content">
+                        <div class="message-text">Start your conversation with ${user.username}!</div>
+                    </div>
+                </div>
+            `;
+        } else {
+            chatMessages.innerHTML = userMessages.map(msg => `
+                <div class="message ${msg.sender === 'me' ? 'sent' : 'received'}">
+                    <div class="message-content">
+                        <div class="message-text">${msg.text}</div>
+                        <div class="message-time">${Utils.formatTime(msg.timestamp)}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Scroll to bottom
+        this.scrollChatToBottom();
     }
 }
 

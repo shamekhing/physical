@@ -250,50 +250,43 @@ class SwipeManager {
         });
     }
 
-    setupSwipeButtons() {
-        const passBtn = document.getElementById('swipe-pass');
-        const likeBtn = document.getElementById('swipe-like');
-
-        if (passBtn) {
-            passBtn.addEventListener('click', () => this.handleButtonSwipe('left'));
-        }
-
-        if (likeBtn) {
-            likeBtn.addEventListener('click', () => this.handleButtonSwipe('right'));
-        }
-    }
-
-    handleButtonSwipe(direction) {
-        const topCard = document.querySelector('.swipe-card:last-child');
-        if (topCard) {
-            const userId = topCard.dataset.userId;
-            this.handleSwipe(userId, direction);
-            this.animateCardOut(topCard, direction);
-        }
-    }
 
     async handleSwipe(userId, direction) {
         try {
             if (direction === 'right') {
-                // Like - store the user for messaging
+                // Like - store the user for messaging and remove from stack
                 await window.Discovery.likeUser(userId);
                 this.storeLikedUser(userId);
                 Utils.showNotification('Liked! 💖', 'success', 1000);
+                
+                // Remove from current cards completely
+                this.currentCards = this.currentCards.filter(user => user.id !== userId);
+                
+                // Update the display after a delay
+                setTimeout(() => {
+                    if (window.DiscoveryManager) {
+                        window.DiscoveryManager.updateNearbyUsersList();
+                    }
+                }, 300);
+                
             } else {
-                // Pass - remove from consideration
+                // Pass - move to back of stack instead of removing
                 await window.Discovery.passUser(userId);
                 Utils.showNotification('Passed 👎', 'info', 1000);
-            }
-            
-            // Remove from current cards
-            this.currentCards = this.currentCards.filter(user => user.id !== userId);
-            
-            // Update the display after a delay
-            setTimeout(() => {
-                if (window.DiscoveryManager) {
-                    window.DiscoveryManager.updateNearbyUsersList();
+                
+                // Move the user to the back of the stack
+                const userIndex = this.currentCards.findIndex(user => user.id === userId);
+                if (userIndex !== -1) {
+                    const user = this.currentCards[userIndex];
+                    this.currentCards.splice(userIndex, 1);
+                    this.currentCards.unshift(user); // Add to back (beginning of array)
+                    
+                    // Re-render the cards to show the new order
+                    setTimeout(() => {
+                        this.renderSwipeCards(this.currentCards);
+                    }, 300);
                 }
-            }, 300);
+            }
             
         } catch (error) {
             console.error('Failed to handle swipe:', error);

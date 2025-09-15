@@ -225,9 +225,6 @@ class PhysicalApp {
             window.UIManager.setupTooltips();
         }
         
-        if (window.SwipeManager) {
-            window.SwipeManager.setupSwipeButtons();
-        }
 
         // Profile management event listeners
         const editProfileBtn = document.getElementById('edit-profile-btn');

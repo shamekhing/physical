@@ -6,11 +6,7 @@
 // - Bluetooth LE scanning to discover nearby devices
 // - Custom GATT services for peer-to-peer communication
 // - Encrypted profile and message exchange
-// Custom Bluetooth service UUIDs for Physical app
-const PHYSICAL_SERVICE_UUID = '12345678-1234-1234-1234-123456789abc';
-const PROFILE_CHARACTERISTIC_UUID = '12345678-1234-1234-1234-123456789abd';
-const PRESENCE_CHARACTERISTIC_UUID = '12345678-1234-1234-1234-123456789abe';
-const MESSAGE_CHARACTERISTIC_UUID = '12345678-1234-1234-1234-123456789abf';
+// Bluetooth service UUIDs are defined in bluetooth-manager.js
 
 class Proximity {
     constructor() {
@@ -40,6 +36,7 @@ class Proximity {
             // Don't require profile at initialization - it will be checked when scanning starts
             this.isInitialized = true;
             console.log('✅ Proximity detection initialized');
+            console.log('📡 Proximity instance created and ready');
             
         } catch (error) {
             console.error('❌ Proximity initialization failed:', error);
@@ -239,7 +236,7 @@ class Proximity {
             this.bluetoothServer = this.bluetoothDevice.gatt;
             
             // Create custom service for Physical app
-            const service = await this.bluetoothServer.getPrimaryService(PHYSICAL_SERVICE_UUID);
+            const service = await this.bluetoothServer.getPrimaryService(window.BluetoothManager ? '12345678-1234-1234-1234-123456789abc' : '0000180f-0000-1000-8000-00805f9b34fb');
             this.advertisementService = service;
             
             // Start periodic advertisement
@@ -309,7 +306,7 @@ class Proximity {
             if (this.advertisementService) {
                 try {
                     // Get the presence characteristic
-                    const characteristic = await this.advertisementService.getCharacteristic(PRESENCE_CHARACTERISTIC_UUID);
+                    const characteristic = await this.advertisementService.getCharacteristic('12345678-1234-1234-1234-123456789abe');
                     
                     // Encode presence data
                     const data = new TextEncoder().encode(JSON.stringify(presenceData));
@@ -658,4 +655,6 @@ class Proximity {
 }
 
 // Create global instance
+console.log('📡 Creating global Proximity instance...');
 window.Proximity = new Proximity();
+console.log('📡 Global Proximity instance created:', window.Proximity);

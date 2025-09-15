@@ -12,6 +12,10 @@ class Discovery {
             console.log('🔍 Initializing user discovery...');
             
             // Wait for dependencies
+            console.log('🔍 Checking dependencies:');
+            console.log('🔍 window.Proximity:', !!window.Proximity);
+            console.log('🔍 window.Profiles:', !!window.Profiles);
+            
             if (!window.Proximity || !window.Profiles) {
                 throw new Error('Dependencies not ready');
             }

@@ -18,12 +18,12 @@
     <link rel="apple-touch-icon" href="assets/icon.png">
     
     <!-- Styles -->
-    <link rel="stylesheet" href="shared/styles.css?v=4">
-    <link rel="stylesheet" href="features/ui/ui.css?v=4">
-    <link rel="stylesheet" href="features/profiles/profiles.css?v=4">
-    <link rel="stylesheet" href="features/proximity/proximity.css?v=4">
-    <link rel="stylesheet" href="features/discovery/discovery.css?v=4">
-    <link rel="stylesheet" href="features/messaging/messaging.css?v=4">
+    <link rel="stylesheet" href="shared/styles.css?v=6">
+    <link rel="stylesheet" href="features/ui/ui.css?v=6">
+    <link rel="stylesheet" href="features/profiles/profiles.css?v=6">
+    <link rel="stylesheet" href="features/proximity/proximity.css?v=6">
+    <link rel="stylesheet" href="features/discovery/discovery.css?v=6">
+    <link rel="stylesheet" href="features/messaging/messaging.css?v=6">
 </head>
 <body>
     <div id="app">
@@ -147,6 +147,10 @@
                     <div id="swipe-stack" class="swipe-stack">
                         <!-- User cards will be populated here for swiping -->
                     </div>
+                    <div class="swipe-actions">
+                        <button id="swipe-pass" class="swipe-btn pass-btn" data-tooltip="Pass on this person">❌</button>
+                        <button id="swipe-like" class="swipe-btn like-btn" data-tooltip="Like this person">❤️</button>
+                    </div>
                 </div>
                 <div id="nearby-users" class="users-list" style="display: none;">
                     <!-- Fallback list view -->
@@ -175,27 +179,24 @@
             </div>
         </div>
 
-        <!-- Messages Screen -->
-        <div id="messages-screen" class="screen">
-            <header class="app-header">
-                <div class="header-title">
-                    <h1>Messages</h1>
-                    <p class="subtitle">Your conversations</p>
+        <!-- Messages Drawer -->
+        <div id="messages-drawer" class="messages-drawer">
+            <div class="drawer-overlay" id="drawer-overlay"></div>
+            <div class="drawer-content">
+                <div class="drawer-header">
+                    <h2>Messages</h2>
+                    <button id="close-messages-drawer" class="btn-close">×</button>
                 </div>
-                <div class="header-controls">
-                    <button id="back-to-main-from-messages" class="btn-icon" data-tooltip="Back to main">←</button>
-                </div>
-            </header>
-
-            <div class="messages-container">
-                <div id="messages-list" class="messages-list">
-                    <!-- List of conversations will be populated here -->
-                </div>
-                <div id="no-messages" class="no-messages" style="display: none;">
-                    <div class="no-messages-content">
-                        <h3>No messages yet</h3>
-                        <p>Start swiping to find people you like and begin conversations!</p>
-                        <button id="start-swiping-btn" class="btn-primary">Start Swiping</button>
+                <div class="drawer-body">
+                    <div id="messages-list" class="messages-list">
+                        <!-- List of conversations will be populated here -->
+                    </div>
+                    <div id="no-messages" class="no-messages" style="display: none;">
+                        <div class="no-messages-content">
+                            <h3>No messages yet</h3>
+                            <p>Start swiping to find people you like and begin conversations!</p>
+                            <button id="start-swiping-btn" class="btn-primary">Start Swiping</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -203,18 +204,18 @@
     </div>
 
     <!-- Scripts -->
-    <script src="shared/utils.js?v=20250915184500"></script>
-    <script src="features/ui/ui-manager.js?v=20250915184500"></script>
-    <script src="features/encryption/encryption.js?v=20250915184500"></script>
-    <script src="features/profiles/profiles.js?v=20250915184500"></script>
-    <script src="features/profiles/profile-manager.js?v=20250915184500"></script>
-    <script src="features/proximity/proximity.js?v=20250915184500"></script>
-    <script src="features/proximity/proximity-manager.js?v=20250915184500"></script>
-    <script src="features/discovery/discovery.js?v=20250915184500"></script>
-    <script src="features/discovery/discovery-manager.js?v=20250915184500"></script>
-    <script src="features/discovery/swipe-manager.js?v=20250915184500"></script>
-    <script src="features/messaging/messaging.js?v=20250915184500"></script>
-    <script src="features/messaging/messaging-manager.js?v=20250915184500"></script>
-    <script src="app.js?v=20250915184500"></script>
+    <script src="shared/utils.js?v=20250915190000"></script>
+    <script src="features/ui/ui-manager.js?v=20250915190000"></script>
+    <script src="features/encryption/encryption.js?v=20250915190000"></script>
+    <script src="features/profiles/profiles.js?v=20250915190000"></script>
+    <script src="features/profiles/profile-manager.js?v=20250915190000"></script>
+    <script src="features/proximity/proximity.js?v=20250915190000"></script>
+    <script src="features/proximity/proximity-manager.js?v=20250915190000"></script>
+    <script src="features/discovery/discovery.js?v=20250915190000"></script>
+    <script src="features/discovery/discovery-manager.js?v=20250915190000"></script>
+    <script src="features/discovery/swipe-manager.js?v=20250915190000"></script>
+    <script src="features/messaging/messaging.js?v=20250915190000"></script>
+    <script src="features/messaging/messaging-manager.js?v=20250915190000"></script>
+    <script src="app.js?v=20250915190000"></script>
 </body>
 </html>

@@ -98,6 +98,11 @@ class ProximityManager {
         if (window.UIManager) {
             window.UIManager.updateProximityStatus(status);
         }
+        
+        // Update our internal state to match
+        if (status.hasOwnProperty('isActive')) {
+            this.isScanning = status.isActive;
+        }
     }
 
     getIsScanning() {

@@ -14,8 +14,8 @@ class SwipeManager {
             return;
         }
 
-        // Create swipe cards (show up to 3 at a time)
-        const cardsToShow = nearbyUsers.slice(0, 3);
+        // Create swipe cards (show up to 4 at a time for better stack effect)
+        const cardsToShow = nearbyUsers.slice(0, 4);
         this.currentCards = cardsToShow;
         
         swipeStack.innerHTML = cardsToShow.map((user, index) => `
@@ -57,16 +57,6 @@ class SwipeManager {
                             <span class="detail-text">${Utils.formatTime(user.lastSeen)}</span>
                         </div>
                     </div>
-                    <div class="swipe-card-actions">
-                        <button class="swipe-action-btn pass-btn" data-user-id="${user.id}">
-                            <span class="btn-icon">❌</span>
-                            <span class="btn-text">Pass</span>
-                        </button>
-                        <button class="swipe-action-btn like-btn" data-user-id="${user.id}">
-                            <span class="btn-icon">❤️</span>
-                            <span class="btn-text">Like</span>
-                        </button>
-                    </div>
                 </div>
             </div>
         `).join('');
@@ -74,8 +64,8 @@ class SwipeManager {
         // Set up swipe functionality
         this.setupSwipeFunctionality();
         
-        // Set up button functionality
-        this.setupButtonFunctionality();
+        // Set up external button functionality
+        this.setupSwipeButtons();
     }
 
     getUserAvatar(user) {
@@ -221,76 +211,64 @@ class SwipeManager {
         });
     }
 
-    setupButtonFunctionality() {
-        const passButtons = document.querySelectorAll('.swipe-action-btn.pass-btn');
-        const likeButtons = document.querySelectorAll('.swipe-action-btn.like-btn');
-
-        passButtons.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const userId = btn.dataset.userId;
-                this.handleSwipe(userId, 'left');
-                const card = btn.closest('.swipe-card');
-                if (card) {
-                    this.animateCardOut(card, 'left');
-                }
-            });
-        });
-
-        likeButtons.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const userId = btn.dataset.userId;
-                this.handleSwipe(userId, 'right');
-                const card = btn.closest('.swipe-card');
-                if (card) {
-                    this.animateCardOut(card, 'right');
-                }
-            });
-        });
-    }
 
 
     async handleSwipe(userId, direction) {
         try {
             if (direction === 'right') {
-                // Like - store the user for messaging and remove from stack
+                // Like - store the user for messaging and move to back
                 await window.Discovery.likeUser(userId);
                 this.storeLikedUser(userId);
                 Utils.showNotification('Liked! 💖', 'success', 1000);
                 
-                // Remove from current cards completely
-                this.currentCards = this.currentCards.filter(user => user.id !== userId);
-                
-                // Update the display after a delay
-                setTimeout(() => {
-                    if (window.DiscoveryManager) {
-                        window.DiscoveryManager.updateNearbyUsersList();
-                    }
-                }, 300);
+                // Move card to back of stack
+                this.moveCardToBack(userId);
                 
             } else {
-                // Pass - move to back of stack instead of removing
+                // Pass - move to back of stack
                 await window.Discovery.passUser(userId);
                 Utils.showNotification('Passed 👎', 'info', 1000);
                 
-                // Move the user to the back of the stack
-                const userIndex = this.currentCards.findIndex(user => user.id === userId);
-                if (userIndex !== -1) {
-                    const user = this.currentCards[userIndex];
-                    this.currentCards.splice(userIndex, 1);
-                    this.currentCards.unshift(user); // Add to back (beginning of array)
-                    
-                    // Re-render the cards to show the new order
-                    setTimeout(() => {
-                        this.renderSwipeCards(this.currentCards);
-                    }, 300);
-                }
+                // Move card to back of stack
+                this.moveCardToBack(userId);
             }
             
         } catch (error) {
             console.error('Failed to handle swipe:', error);
             Utils.showNotification('Failed to process swipe', 'error');
+        }
+    }
+
+    moveCardToBack(userId) {
+        // Find the card and move it to the back
+        const cardIndex = this.currentCards.findIndex(card => card.id === userId);
+        if (cardIndex !== -1) {
+            const card = this.currentCards.splice(cardIndex, 1)[0];
+            this.currentCards.push(card); // Add to back of array
+            
+            // Re-render the cards
+            setTimeout(() => {
+                this.renderSwipeCards(this.currentCards);
+            }, 300);
+        }
+    }
+
+    removeTopCard() {
+        // Remove the first card from the array
+        this.currentCards.shift();
+        
+        // Get more users if we're running low
+        if (this.currentCards.length <= 1) {
+            setTimeout(() => {
+                if (window.DiscoveryManager) {
+                    window.DiscoveryManager.updateNearbyUsersList();
+                }
+            }, 300);
+        } else {
+            // Re-render with remaining cards
+            setTimeout(() => {
+                this.renderSwipeCards(this.currentCards);
+            }, 300);
         }
     }
 
@@ -344,6 +322,28 @@ class SwipeManager {
                 card.parentNode.removeChild(card);
             }
         }, 300);
+    }
+
+    setupSwipeButtons() {
+        const passBtn = document.getElementById('swipe-pass');
+        const likeBtn = document.getElementById('swipe-like');
+
+        if (passBtn) {
+            passBtn.addEventListener('click', () => this.handleButtonSwipe('left'));
+        }
+
+        if (likeBtn) {
+            likeBtn.addEventListener('click', () => this.handleButtonSwipe('right'));
+        }
+    }
+
+    handleButtonSwipe(direction) {
+        const topCard = document.querySelector('.swipe-card:first-child');
+        if (topCard) {
+            const userId = topCard.dataset.userId;
+            this.handleSwipe(userId, direction);
+            this.animateCardOut(topCard, direction);
+        }
     }
 }
 

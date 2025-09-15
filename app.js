@@ -164,7 +164,7 @@ class PhysicalApp {
         const messagesBtn = document.getElementById('messages-btn');
         if (messagesBtn && window.UIManager) {
             messagesBtn.addEventListener('click', () => {
-                window.UIManager.showMessagesScreen();
+                window.UIManager.showMessagesDrawer();
             });
         }
 
@@ -225,6 +225,10 @@ class PhysicalApp {
             window.UIManager.setupTooltips();
         }
         
+        if (window.SwipeManager) {
+            window.SwipeManager.setupSwipeButtons();
+        }
+        
 
         // Profile management event listeners
         const editProfileBtn = document.getElementById('edit-profile-btn');
@@ -253,7 +257,24 @@ class PhysicalApp {
 
         const startSwipingBtn = document.getElementById('start-swiping-btn');
         if (startSwipingBtn && window.UIManager) {
-            startSwipingBtn.addEventListener('click', () => window.UIManager.showMainScreen());
+            startSwipingBtn.addEventListener('click', () => {
+                window.UIManager.hideMessagesDrawer();
+            });
+        }
+
+        // Messages drawer controls
+        const closeMessagesDrawer = document.getElementById('close-messages-drawer');
+        if (closeMessagesDrawer && window.UIManager) {
+            closeMessagesDrawer.addEventListener('click', () => {
+                window.UIManager.hideMessagesDrawer();
+            });
+        }
+
+        const drawerOverlay = document.getElementById('drawer-overlay');
+        if (drawerOverlay && window.UIManager) {
+            drawerOverlay.addEventListener('click', () => {
+                window.UIManager.hideMessagesDrawer();
+            });
         }
 
         const cancelEditBtn = document.getElementById('cancel-edit-btn');

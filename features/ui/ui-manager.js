@@ -38,9 +38,22 @@ class UIManager {
         this.populateEditForm();
     }
 
-    showMessagesScreen() {
-        this.showScreen('messages');
-        this.populateMessagesList();
+    showMessagesDrawer() {
+        const drawer = document.getElementById('messages-drawer');
+        if (drawer) {
+            drawer.classList.add('active');
+            this.populateMessagesList();
+        }
+    }
+
+    hideMessagesDrawer() {
+        const drawer = document.getElementById('messages-drawer');
+        if (drawer) {
+            drawer.classList.remove('active');
+        }
+        
+        // Make sure we're on the main screen showing discovery
+        this.showMainScreen();
     }
 
     showMainScreen() {
@@ -51,11 +64,14 @@ class UIManager {
         if (chatSection) chatSection.style.display = 'none';
         if (discoverySection) discoverySection.style.display = 'block';
         
-        // Update proximity status to show user needs to start scanning
-        this.updateProximityStatus({
-            isActive: false,
-            message: 'Click the 📡 button to start scanning for nearby users'
-        });
+        // Don't reset proximity status - let it maintain its current state
+        // Only update if proximity is not active
+        if (!window.ProximityManager || !window.ProximityManager.getIsScanning()) {
+            this.updateProximityStatus({
+                isActive: false,
+                message: 'Click the 📡 button to start scanning for nearby users'
+            });
+        }
     }
 
     showChatScreen(userId) {
@@ -336,9 +352,16 @@ class UIManager {
             // Store the current chat user
             Utils.storage.set('currentChatUser', user);
             
+            // Close the messages drawer
+            this.hideMessagesDrawer();
+            
             // Go back to main screen and show chat
             this.showMainScreen();
-            this.showChatSection(user);
+            
+            // Small delay to let drawer close
+            setTimeout(() => {
+                this.showChatSection(user);
+            }, 100);
         }
     }
 

@@ -28,6 +28,16 @@ class UIManager {
         this.showScreen('profile');
     }
 
+    showProfileManagementScreen() {
+        this.showScreen('profile-management');
+        this.populateProfileInfo();
+    }
+
+    showProfileEditScreen() {
+        this.showScreen('profile-edit');
+        this.populateEditForm();
+    }
+
     showMainScreen() {
         this.showScreen('main');
         // Show discovery section, hide chat (default view)
@@ -184,6 +194,63 @@ class UIManager {
                 }
             });
         });
+    }
+
+    populateProfileInfo() {
+        const profile = window.Profiles ? window.Profiles.getCurrentProfile() : null;
+        const profileInfo = document.getElementById('profile-info');
+        
+        if (!profile || !profileInfo) return;
+
+        const stats = window.Profiles.getProfileStats();
+        const reputationBadge = window.Profiles.getReputationBadge();
+        
+        profileInfo.innerHTML = `
+            <div class="profile-details">
+                <div class="profile-field">
+                    <label>Username:</label>
+                    <span>${profile.username}</span>
+                </div>
+                <div class="profile-field">
+                    <label>Age:</label>
+                    <span>${profile.age}</span>
+                </div>
+                <div class="profile-field">
+                    <label>Interests:</label>
+                    <span>${Array.isArray(profile.interests) ? profile.interests.join(', ') : profile.interests}</span>
+                </div>
+                <div class="profile-field">
+                    <label>Availability:</label>
+                    <span>${profile.availability}</span>
+                </div>
+                <div class="profile-field">
+                    <label>Reputation:</label>
+                    <span>${reputationBadge} ${profile.reputation} (${stats.reputationTier})</span>
+                </div>
+                <div class="profile-field">
+                    <label>Member since:</label>
+                    <span>${new Date(profile.createdAt).toLocaleDateString()}</span>
+                </div>
+                <div class="profile-field">
+                    <label>Last seen:</label>
+                    <span>${Utils.formatTime(profile.lastSeen)}</span>
+                </div>
+            </div>
+        `;
+    }
+
+    populateEditForm() {
+        const profile = window.Profiles ? window.Profiles.getCurrentProfile() : null;
+        
+        if (!profile) return;
+
+        const ageInput = document.getElementById('edit-age');
+        const interestsInput = document.getElementById('edit-interests');
+        const availabilitySelect = document.getElementById('edit-availability');
+
+        if (ageInput) ageInput.value = profile.age;
+        if (interestsInput) interestsInput.value = Array.isArray(profile.interests) ? profile.interests.join(', ') : profile.interests;
+        if (availabilitySelect) availabilitySelect.value = profile.availability;
     }
 }
 

@@ -57,12 +57,30 @@ class Utils {
         return numAge >= 18 && numAge <= 99;
     }
 
-    // Validate interests string
+    // Validate interests string or array
     static validateInterests(interests) {
-        if (!interests || interests.trim().length === 0) {
+        console.log('🔍 validateInterests called with:', interests, 'Type:', typeof interests, 'IsArray:', Array.isArray(interests));
+        
+        // Handle both string and array inputs
+        let interestList;
+        if (Array.isArray(interests)) {
+            console.log('🔍 Processing as array');
+            // If it's already an array, use it directly
+            interestList = interests.filter(i => i && typeof i === 'string' && i.trim().length > 0);
+        } else if (typeof interests === 'string') {
+            console.log('🔍 Processing as string');
+            // If it's a string, split and trim
+            if (!interests || interests.trim().length === 0) {
+                return false;
+            }
+            interestList = interests.split(',').map(i => i.trim()).filter(i => i.length > 0);
+        } else {
+            console.log('🔍 Invalid type detected');
+            // Invalid type
             return false;
         }
-        const interestList = interests.split(',').map(i => i.trim());
+        
+        console.log('🔍 Final interestList:', interestList);
         return interestList.length >= 1 && interestList.length <= 10;
     }
 

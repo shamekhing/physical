@@ -46,8 +46,42 @@ class Profiles {
             // Validate profile data
             this.validateProfileData(profileData);
 
-            // Create age proof
-            const ageProof = await window.Encryption.createAgeProof(profileData.age);
+            // Create age proof (with fallback if encryption fails)
+            let ageProof = null;
+            try {
+                if (window.Encryption && window.Encryption.hasValidKeys()) {
+                    ageProof = await window.Encryption.createAgeProof(profileData.age);
+                } else {
+                    console.warn('⚠️ Encryption not available, creating profile without age proof');
+                }
+            } catch (error) {
+                console.warn('⚠️ Age proof creation failed:', error);
+                
+                // If it's a key algorithm mismatch, try to reset the keys
+                if (error.message && error.message.includes('algorithm')) {
+                    console.log('🔄 Attempting to reset corrupted encryption keys...');
+                    try {
+                        await window.Encryption.resetKeys();
+                        // Try creating age proof again with new keys
+                        ageProof = await window.Encryption.createAgeProof(profileData.age);
+                        console.log('✅ Age proof created with reset keys');
+                    } catch (resetError) {
+                        console.warn('⚠️ Key reset failed, continuing without age proof:', resetError);
+                    }
+                } else {
+                    console.warn('⚠️ Continuing without age proof');
+                }
+            }
+
+            // Normalize interests to array format
+            let interestsArray;
+            if (Array.isArray(profileData.interests)) {
+                interestsArray = profileData.interests.filter(i => i && typeof i === 'string' && i.trim().length > 0);
+            } else if (typeof profileData.interests === 'string') {
+                interestsArray = profileData.interests.split(',').map(i => i.trim()).filter(i => i);
+            } else {
+                interestsArray = [];
+            }
 
             // Create anonymous profile
             const profile = {
@@ -55,12 +89,12 @@ class Profiles {
                 username: Utils.generateUsername(),
                 age: profileData.age,
                 ageProof: ageProof,
-                interests: profileData.interests.split(',').map(i => i.trim()).filter(i => i),
+                interests: interestsArray,
                 availability: profileData.availability,
                 reputation: 1000, // Starting ELO score
                 createdAt: Date.now(),
                 lastSeen: Date.now(),
-                publicKey: window.Encryption.getPublicKey(),
+                publicKey: window.Encryption ? window.Encryption.getPublicKey() : null,
                 isVerified: false
             };
 
@@ -97,6 +131,8 @@ class Profiles {
 
     async updateProfile(updates) {
         try {
+            console.log('🔍 updateProfile called with:', updates);
+            
             if (!this.currentProfile) {
                 throw new Error('No profile to update');
             }
@@ -110,16 +146,51 @@ class Profiles {
                 throw new Error('Invalid interests');
             }
 
+            // Normalize interests if they're being updated
+            let normalizedUpdates = { ...updates };
+            if (updates.interests) {
+                if (Array.isArray(updates.interests)) {
+                    normalizedUpdates.interests = updates.interests.filter(i => i && typeof i === 'string' && i.trim().length > 0);
+                } else if (typeof updates.interests === 'string') {
+                    normalizedUpdates.interests = updates.interests.split(',').map(i => i.trim()).filter(i => i);
+                } else {
+                    normalizedUpdates.interests = [];
+                }
+            }
+
             // Update profile
             const updatedProfile = {
                 ...this.currentProfile,
-                ...updates,
+                ...normalizedUpdates,
                 updatedAt: Date.now()
             };
 
-            // If age changed, create new age proof
+            // If age changed, create new age proof (with fallback if encryption fails)
             if (updates.age) {
-                updatedProfile.ageProof = await window.Encryption.createAgeProof(updates.age);
+                try {
+                    if (window.Encryption && window.Encryption.hasValidKeys()) {
+                        updatedProfile.ageProof = await window.Encryption.createAgeProof(updates.age);
+                    } else {
+                        console.warn('⚠️ Encryption not available, updating profile without age proof');
+                    }
+                } catch (error) {
+                    console.warn('⚠️ Age proof creation failed during update:', error);
+                    
+                    // If it's a key algorithm mismatch, try to reset the keys
+                    if (error.message && error.message.includes('algorithm')) {
+                        console.log('🔄 Attempting to reset corrupted encryption keys...');
+                        try {
+                            await window.Encryption.resetKeys();
+                            // Try creating age proof again with new keys
+                            updatedProfile.ageProof = await window.Encryption.createAgeProof(updates.age);
+                            console.log('✅ Age proof created with reset keys');
+                        } catch (resetError) {
+                            console.warn('⚠️ Key reset failed, continuing without age proof:', resetError);
+                        }
+                    } else {
+                        console.warn('⚠️ Continuing without age proof');
+                    }
+                }
             }
 
             // Store updated profile

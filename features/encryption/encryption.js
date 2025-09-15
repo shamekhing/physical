@@ -13,7 +13,9 @@ class Encryption {
             
             // Check if Web Crypto API is supported
             if (!window.crypto || !window.crypto.subtle) {
-                throw new Error('Web Crypto API not supported');
+                console.warn('⚠️ Web Crypto API not supported, using fallback mode');
+                this.isInitialized = true; // Allow app to continue without encryption
+                return;
             }
 
             // Generate or load key pair
@@ -24,7 +26,8 @@ class Encryption {
             
         } catch (error) {
             console.error('❌ Encryption initialization failed:', error);
-            throw error;
+            console.warn('⚠️ Continuing without encryption...');
+            this.isInitialized = true; // Allow app to continue without encryption
         }
     }
 
@@ -33,10 +36,21 @@ class Encryption {
             // Check if we have existing keys
             const existingKeys = Utils.storage.get('encryptionKeys');
             if (existingKeys) {
-                this.keyPair = existingKeys;
+                console.log('📋 Loading existing encryption keys...');
+                
+                // Import the stored keys back to CryptoKey objects
+                const publicKeyObj = await this.importPublicKey(existingKeys.publicKey);
+                const privateKeyObj = await this.importPrivateKey(existingKeys.privateKey);
+                
+                // Create the keyPair object with the imported keys
+                this.keyPair = {
+                    publicKey: publicKeyObj,
+                    privateKey: privateKeyObj
+                };
+                
                 this.publicKey = existingKeys.publicKey;
                 this.privateKey = existingKeys.privateKey;
-                console.log('📋 Loaded existing encryption keys');
+                console.log('✅ Loaded existing encryption keys');
                 return;
             }
 
@@ -392,6 +406,10 @@ class Encryption {
         return this.isInitialized && this.publicKey && this.privateKey;
     }
 
+    hasValidKeys() {
+        return this.isInitialized && this.keyPair && this.keyPair.publicKey && this.keyPair.privateKey;
+    }
+
     // Clear all encryption data (for logout)
     clear() {
         this.keyPair = null;
@@ -399,6 +417,19 @@ class Encryption {
         this.privateKey = null;
         this.isInitialized = false;
         Utils.storage.remove('encryptionKeys');
+    }
+
+    // Reset encryption keys (for when keys are corrupted)
+    async resetKeys() {
+        console.log('🔄 Resetting encryption keys...');
+        this.clear();
+        try {
+            await this.generateKeyPair();
+            console.log('✅ Encryption keys reset successfully');
+        } catch (error) {
+            console.error('❌ Failed to reset encryption keys:', error);
+            throw error;
+        }
     }
 }
 

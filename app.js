@@ -28,13 +28,32 @@ class PhysicalApp {
                 window.ProfileManager.checkExistingProfile();
             }
             
-            // Fallback: if still on loading screen after 3 seconds, show profile screen
+            // Aggressive fallback: force screen change after 2 seconds
             setTimeout(() => {
-                if (window.UIManager && window.UIManager.currentScreen === 'loading') {
-                    console.log('⚠️ Still on loading screen, forcing profile screen');
-                    window.UIManager.showProfileScreen();
+                console.log('🔍 Fallback timeout triggered');
+                console.log('🔍 UIManager exists:', !!window.UIManager);
+                console.log('🔍 Current screen:', window.UIManager ? window.UIManager.currentScreen : 'undefined');
+                
+                // Force screen change regardless of current state
+                if (window.UIManager) {
+                    if (window.Profiles && window.Profiles.hasProfile()) {
+                        console.log('⚠️ Forcing main screen');
+                        window.UIManager.showMainScreen();
+                    } else {
+                        console.log('⚠️ Forcing profile screen');
+                        window.UIManager.showProfileScreen();
+                    }
+                } else {
+                    console.error('❌ UIManager not available, trying direct DOM manipulation');
+                    // Direct DOM manipulation as last resort
+                    document.querySelectorAll('.screen').forEach(screen => screen.classList.remove('active'));
+                    const profileScreen = document.getElementById('profile-screen');
+                    if (profileScreen) {
+                        profileScreen.classList.add('active');
+                        console.log('✅ Direct DOM manipulation: profile screen shown');
+                    }
                 }
-            }, 3000);
+            }, 2000);
             
         } catch (error) {
             console.error('❌ App initialization failed:', error);
@@ -132,7 +151,14 @@ class PhysicalApp {
 
         const profileBtn = document.getElementById('profile-btn');
         if (profileBtn && window.UIManager) {
-            profileBtn.addEventListener('click', () => window.UIManager.showProfileScreen());
+            profileBtn.addEventListener('click', () => {
+                // Show profile management if profile exists, otherwise show creation screen
+                if (window.Profiles && window.Profiles.hasProfile()) {
+                    window.UIManager.showProfileManagementScreen();
+                } else {
+                    window.UIManager.showProfileScreen();
+                }
+            });
         }
 
         // Proximity radius change
@@ -194,6 +220,36 @@ class PhysicalApp {
         
         if (window.SwipeManager) {
             window.SwipeManager.setupSwipeButtons();
+        }
+
+        // Profile management event listeners
+        const editProfileBtn = document.getElementById('edit-profile-btn');
+        if (editProfileBtn && window.UIManager) {
+            editProfileBtn.addEventListener('click', () => window.UIManager.showProfileEditScreen());
+        }
+
+        const deleteProfileBtn = document.getElementById('delete-profile-btn');
+        if (deleteProfileBtn && window.ProfileManager) {
+            deleteProfileBtn.addEventListener('click', async () => {
+                if (confirm('Are you sure you want to delete your profile? This action cannot be undone.')) {
+                    await window.ProfileManager.deleteProfile();
+                }
+            });
+        }
+
+        const backToMainBtn = document.getElementById('back-to-main-btn');
+        if (backToMainBtn && window.UIManager) {
+            backToMainBtn.addEventListener('click', () => window.UIManager.showMainScreen());
+        }
+
+        const cancelEditBtn = document.getElementById('cancel-edit-btn');
+        if (cancelEditBtn && window.UIManager) {
+            cancelEditBtn.addEventListener('click', () => window.UIManager.showProfileManagementScreen());
+        }
+
+        const profileEditForm = document.getElementById('profile-edit-form');
+        if (profileEditForm && window.ProfileManager) {
+            profileEditForm.addEventListener('submit', (e) => window.ProfileManager.handleProfileEditSubmit(e));
         }
     }
 

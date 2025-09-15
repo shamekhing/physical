@@ -1,21 +1,14 @@
 // Service Worker for Physical App
-const CACHE_NAME = 'physical-v2-silver-grey';
+const CACHE_NAME = 'physical-v3-no-js-cache';
 const urlsToCache = [
     '/',
     '/index.html',
     '/manifest.json',
     '/shared/styles.css',
-    '/shared/utils.js',
-    '/features/encryption/encryption.js',
-    '/features/profiles/profiles.js',
     '/features/profiles/profiles.css',
-    '/features/proximity/proximity.js',
     '/features/proximity/proximity.css',
-    '/features/discovery/discovery.js',
     '/features/discovery/discovery.css',
-    '/features/messaging/messaging.js',
     '/features/messaging/messaging.css',
-    '/app.js',
     '/assets/icon-192.png',
     '/assets/icon-512.png'
 ];
@@ -25,18 +18,28 @@ self.addEventListener('install', (event) => {
     console.log('🔧 Service Worker installing...');
     
     event.waitUntil(
-        caches.open(CACHE_NAME)
-            .then((cache) => {
-                console.log('📦 Caching app files...');
-                return cache.addAll(urlsToCache);
-            })
-            .then(() => {
-                console.log('✅ Service Worker installed');
-                return self.skipWaiting();
-            })
-            .catch((error) => {
-                console.error('❌ Service Worker installation failed:', error);
-            })
+        // Clear all existing caches first
+        caches.keys().then((cacheNames) => {
+            return Promise.all(
+                cacheNames.map((cacheName) => {
+                    console.log('🗑️ Deleting old cache:', cacheName);
+                    return caches.delete(cacheName);
+                })
+            );
+        }).then(() => {
+            // Then create new cache
+            return caches.open(CACHE_NAME);
+        }).then((cache) => {
+            console.log('📦 Caching app files...');
+            return cache.addAll(urlsToCache);
+        })
+        .then(() => {
+            console.log('✅ Service Worker installed');
+            return self.skipWaiting();
+        })
+        .catch((error) => {
+            console.error('❌ Service Worker installation failed:', error);
+        })
     );
 });
 
@@ -75,6 +78,13 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
+    // Always fetch JavaScript files fresh from network
+    if (event.request.url.includes('.js')) {
+        console.log('🔄 Bypassing cache for JS file:', event.request.url);
+        event.respondWith(fetch(event.request));
+        return;
+    }
+    
     event.respondWith(
         caches.match(event.request)
             .then((response) => {

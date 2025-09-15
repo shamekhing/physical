@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Validation Test</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+</head>
+<body>
+    <h1>Interests Validation Test</h1>
+    <button onclick="testValidation()">Test Validation</button>
+    <div id="results"></div>
+
+    <script>
+        // Copy of the updated validateInterests function
+        class TestUtils {
+            static validateInterests(interests) {
+                console.log('🔍 validateInterests called with:', interests, 'Type:', typeof interests, 'IsArray:', Array.isArray(interests));
+                
+                // Handle both string and array inputs
+                let interestList;
+                if (Array.isArray(interests)) {
+                    console.log('🔍 Processing as array');
+                    // If it's already an array, use it directly
+                    interestList = interests.filter(i => i && typeof i === 'string' && i.trim().length > 0);
+                } else if (typeof interests === 'string') {
+                    console.log('🔍 Processing as string');
+                    // If it's a string, split and trim
+                    if (!interests || interests.trim().length === 0) {
+                        return false;
+                    }
+                    interestList = interests.split(',').map(i => i.trim()).filter(i => i.length > 0);
+                } else {
+                    console.log('🔍 Invalid type detected');
+                    // Invalid type
+                    return false;
+                }
+                
+                console.log('🔍 Final interestList:', interestList);
+                return interestList.length >= 1 && interestList.length <= 10;
+            }
+        }
+
+        function testValidation() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<h2>Test Results:</h2>';
+            
+            const testCases = [
+                'music',
+                'music, sports',
+                'music, sports, travel',
+                ['music'],
+                ['music', 'sports'],
+                '',
+                [],
+                null,
+                undefined
+            ];
+            
+            testCases.forEach((testCase, index) => {
+                try {
+                    const result = TestUtils.validateInterests(testCase);
+                    results.innerHTML += `<p>Test ${index + 1}: ${JSON.stringify(testCase)} → ${result}</p>`;
+                } catch (error) {
+                    results.innerHTML += `<p style="color: red;">Test ${index + 1}: ${JSON.stringify(testCase)} → ERROR: ${error.message}</p>`;
+                }
+            });
+        }
+    </script>
+</body>
+</html>

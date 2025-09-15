@@ -404,37 +404,47 @@ class Proximity {
     }
 
     simulateNearbyDevice() {
-        // Simulate discovering a nearby user
+        // Simulate discovering a nearby Physical app user
         const simulatedUser = {
             id: Utils.generateId(),
             username: Utils.generateUsername(),
             age: Math.floor(Math.random() * 20) + 18, // 18-37
-            interests: ['music', 'sports', 'movies'].slice(0, Math.floor(Math.random() * 3) + 1),
+            interests: ['music', 'sports', 'movies', 'art', 'travel', 'food', 'gaming', 'fitness'].slice(0, Math.floor(Math.random() * 4) + 1),
             availability: ['now', 'tonight', 'weekend', 'flexible'][Math.floor(Math.random() * 4)],
             reputation: Math.floor(Math.random() * 1000) + 500, // 500-1500
             distance: Math.random() * this.scanRadius,
             lastSeen: Date.now(),
-            signalStrength: Math.random() * 100
+            signalStrength: Math.random() * 100,
+            isPhysicalAppUser: true, // Mark as Physical app user
+            appVersion: '1.0.0'
         };
 
+        console.log('👤 Physical app user discovered (fallback):', simulatedUser.username);
         this.handleDeviceDiscovered(simulatedUser);
     }
 
     handleDeviceDiscovered(deviceData) {
         try {
+            // Only accept devices running the Physical app
+            if (!deviceData.isPhysicalAppUser) {
+                console.log('🚫 Ignoring non-Physical app device:', deviceData.username || 'Unknown');
+                return;
+            }
+            
             // Calculate distance based on signal strength (simplified)
             const distance = this.calculateDistance(deviceData.signalStrength);
             
             const userData = {
                 ...deviceData,
                 distance: distance,
-                discoveredAt: Date.now()
+                discoveredAt: Date.now(),
+                isPhysicalAppUser: true // Ensure it's marked as Physical app user
             };
 
             // Store discovered device
             this.discoveredDevices.set(userData.id, userData);
             
-            console.log('👤 Device discovered:', userData.username, `${distance.toFixed(1)}m away`);
+            console.log('👤 Physical app user discovered:', userData.username, `${distance.toFixed(1)}m away`);
             
             // Emit discovery event
             Utils.events.emit('user-discovered', userData);

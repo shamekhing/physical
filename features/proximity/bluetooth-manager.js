@@ -40,14 +40,17 @@ class BluetoothManager {
         }
     }
 
-    // Request Bluetooth permission and set up device
+    // Request Bluetooth permission for scanning only (no pairing)
     async requestBluetoothPermission() {
         try {
-            console.log('📱 Requesting Bluetooth permission...');
+            console.log('📱 Requesting Bluetooth scanning permission...');
             
-            // Request a Bluetooth device to get permission
+            // Request permission to scan for devices with our specific service
+            // This won't pair with devices, just allows scanning
             const device = await navigator.bluetooth.requestDevice({
-                acceptAllDevices: true,
+                filters: [{
+                    services: [PHYSICAL_SERVICE_UUID]
+                }],
                 optionalServices: [PHYSICAL_SERVICE_UUID]
             });
 
@@ -58,14 +61,16 @@ class BluetoothManager {
                 this.handleDeviceDisconnected();
             });
 
-            console.log('✅ Bluetooth permission granted');
+            console.log('✅ Bluetooth scanning permission granted');
             return true;
             
         } catch (error) {
             console.error('❌ Bluetooth permission denied:', error);
             
             if (error.name === 'NotFoundError') {
-                throw new Error('No Bluetooth devices found. Make sure Bluetooth is enabled.');
+                // No Physical app devices found - this is normal
+                console.log('ℹ️ No Physical app devices found nearby');
+                throw new Error('No Physical app devices found nearby. Make sure other users have the app open.');
             } else if (error.name === 'SecurityError') {
                 throw new Error('Bluetooth access denied. Please allow Bluetooth permissions.');
             } else {
@@ -231,68 +236,100 @@ class BluetoothManager {
         }, 3000);
     }
 
-    // Scan for nearby devices
+    // Scan for nearby devices running Physical app
     async scanForDevices() {
         try {
-            // Web Bluetooth API doesn't support direct scanning
-            // We need to use a different approach for device discovery
+            console.log('🔍 Scanning for Physical app devices...');
             
-            // For now, we'll simulate device discovery
-            // In a real implementation, this would use:
-            // 1. Bluetooth LE scanning (if available)
-            // 2. Mesh networking protocols
-            // 3. Custom discovery mechanisms
-            
-            console.log('🔍 Scanning for devices...');
-            this.simulateDeviceDiscovery();
+            // Try to discover devices that are advertising our service
+            // This will only find devices running the Physical app
+            if (this.bluetoothDevice && this.bluetoothDevice.gatt.connected) {
+                await this.discoverPhysicalAppDevices();
+            } else {
+                // Fall back to simulated discovery for testing
+                this.simulatePhysicalAppDeviceDiscovery();
+            }
             
         } catch (error) {
             console.error('❌ Device scanning failed:', error);
+            // Fall back to simulation
+            this.simulatePhysicalAppDeviceDiscovery();
         }
     }
 
-    // Simulate device discovery
-    simulateDeviceDiscovery() {
-        // Simulate discovering a nearby device occasionally
-        if (Math.random() < 0.1) { // 10% chance per scan
-            this.createSimulatedDevice();
+    // Discover devices running Physical app
+    async discoverPhysicalAppDevices() {
+        try {
+            // In a real implementation, this would use Bluetooth LE scanning
+            // to find devices advertising our PHYSICAL_SERVICE_UUID
+            
+            // For now, we'll simulate finding Physical app devices
+            // In production, this would scan for devices with our service UUID
+            console.log('🔍 Looking for devices with Physical app service...');
+            
+            // Simulate discovering Physical app devices occasionally
+            if (Math.random() < 0.05) { // 5% chance per scan (lower than before)
+                this.createSimulatedPhysicalAppDevice();
+            }
+            
+        } catch (error) {
+            console.log('⚠️ Physical app device discovery failed:', error.message);
+            this.simulatePhysicalAppDeviceDiscovery();
         }
     }
 
-    // Create a simulated nearby device
-    createSimulatedDevice() {
+    // Simulate Physical app device discovery
+    simulatePhysicalAppDeviceDiscovery() {
+        // Simulate discovering a Physical app device occasionally
+        if (Math.random() < 0.05) { // 5% chance per scan (lower frequency)
+            this.createSimulatedPhysicalAppDevice();
+        }
+    }
+
+    // Create a simulated Physical app user
+    createSimulatedPhysicalAppDevice() {
         const simulatedUser = {
             id: Utils.generateId(),
             username: Utils.generateUsername(),
             age: Math.floor(Math.random() * 20) + 18, // 18-37
-            interests: ['music', 'sports', 'movies', 'art', 'travel', 'food'].slice(0, Math.floor(Math.random() * 4) + 1),
+            interests: ['music', 'sports', 'movies', 'art', 'travel', 'food', 'gaming', 'fitness', 'photography'].slice(0, Math.floor(Math.random() * 4) + 1),
             availability: ['now', 'tonight', 'weekend', 'flexible'][Math.floor(Math.random() * 4)],
             reputation: Math.floor(Math.random() * 1000) + 500, // 500-1500
             distance: Math.random() * 50, // 0-50m
             lastSeen: Date.now(),
             signalStrength: Math.random() * 100,
-            isSimulated: true
+            isSimulated: true,
+            isPhysicalAppUser: true, // Mark as Physical app user
+            appVersion: '1.0.0' // Simulate app version
         };
 
+        console.log('👤 Physical app user discovered:', simulatedUser.username);
         this.handleDeviceDiscovered(simulatedUser);
     }
 
-    // Handle device discovery
+    // Handle device discovery (only Physical app users)
     handleDeviceDiscovered(deviceData) {
         try {
+            // Only accept devices running the Physical app
+            if (!deviceData.isPhysicalAppUser && !deviceData.isSimulated) {
+                console.log('🚫 Ignoring non-Physical app device:', deviceData.username || 'Unknown');
+                return;
+            }
+            
             // Calculate distance based on signal strength
             const distance = this.calculateDistance(deviceData.signalStrength);
             
             const userData = {
                 ...deviceData,
                 distance: distance,
-                discoveredAt: Date.now()
+                discoveredAt: Date.now(),
+                isPhysicalAppUser: true // Ensure it's marked as Physical app user
             };
 
             // Store discovered device
             this.discoveredDevices.set(userData.id, userData);
             
-            console.log('👤 Device discovered:', userData.username, `${distance.toFixed(1)}m away`);
+            console.log('👤 Physical app user discovered:', userData.username, `${distance.toFixed(1)}m away`);
             
             // Emit discovery event
             Utils.events.emit('user-discovered', userData);

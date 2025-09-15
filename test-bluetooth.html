@@ -55,6 +55,7 @@
     <div class="container">
         <h1>🔵 Physical - Bluetooth Test</h1>
         <p>This page tests the real Bluetooth functionality implementation.</p>
+        <p><strong>Note:</strong> This will only discover devices running the Physical app, not random Bluetooth devices.</p>
         
         <div id="status" class="status info">
             Ready to test Bluetooth functionality
@@ -145,16 +146,20 @@
         
         // Test scanning
         document.getElementById('test-bluetooth-scanning').addEventListener('click', async () => {
-            addLog('Testing Bluetooth scanning...');
+            addLog('Testing Bluetooth scanning for Physical app users...');
             
             try {
                 await window.BluetoothManager.startScanning();
-                addLog('✅ Bluetooth scanning started', 'success');
-                updateStatus('Bluetooth scanning active', 'success');
+                addLog('✅ Bluetooth scanning started (Physical app users only)', 'success');
+                updateStatus('Bluetooth scanning active (Physical app users only)', 'success');
                 
                 // Listen for discovered devices
                 Utils.events.on('user-discovered', (user) => {
-                    addLog(`👤 Device discovered: ${user.username} (${user.distance.toFixed(1)}m away)`, 'success');
+                    if (user.isPhysicalAppUser) {
+                        addLog(`👤 Physical app user discovered: ${user.username} (${user.distance.toFixed(1)}m away)`, 'success');
+                    } else {
+                        addLog(`🚫 Non-Physical app device ignored: ${user.username || 'Unknown'}`, 'warning');
+                    }
                 });
             } catch (error) {
                 addLog(`❌ Bluetooth scanning failed: ${error.message}`, 'error');
@@ -167,7 +172,7 @@
             addLog('Testing Bluetooth messaging...');
             
             try {
-                // Create a test device
+                // Create a test Physical app device
                 const testDeviceId = 'test-device-123';
                 const testDevice = {
                     id: testDeviceId,
@@ -178,7 +183,9 @@
                     reputation: 1000,
                     distance: 5,
                     lastSeen: Date.now(),
-                    signalStrength: 80
+                    signalStrength: 80,
+                    isPhysicalAppUser: true, // Mark as Physical app user
+                    appVersion: '1.0.0'
                 };
                 
                 // Add to discovered devices

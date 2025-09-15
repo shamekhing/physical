@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Physical - App Filtering Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .demo-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .device-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
+        }
+        .device-card {
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid;
+        }
+        .physical-app-user {
+            border-color: #28a745;
+            background: #d4edda;
+        }
+        .random-device {
+            border-color: #dc3545;
+            background: #f8d7da;
+        }
+        .device-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .device-type {
+            font-size: 12px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: white;
+            display: inline-block;
+        }
+        .physical-app {
+            background: #28a745;
+        }
+        .random-bluetooth {
+            background: #dc3545;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 10px;
+            height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔵 Physical - App Filtering Demo</h1>
+        <p>This demo shows how the Physical app filters Bluetooth devices to only show users running the app.</p>
+        
+        <div class="demo-section">
+            <h3>📱 Simulated Bluetooth Environment</h3>
+            <p>Below are devices that might be discovered in a real Bluetooth environment:</p>
+            
+            <div class="device-list" id="all-devices">
+                <!-- Devices will be populated here -->
+            </div>
+            
+            <button onclick="simulateDiscovery()">🔍 Simulate Bluetooth Discovery</button>
+            <button onclick="clearResults()">🗑️ Clear Results</button>
+        </div>
+        
+        <div class="demo-section">
+            <h3>✅ Physical App Users (Will Appear in Swipe Stack)</h3>
+            <div class="device-list" id="physical-app-users">
+                <!-- Physical app users will be shown here -->
+            </div>
+        </div>
+        
+        <div class="demo-section">
+            <h3>🚫 Random Bluetooth Devices (Will Be Ignored)</h3>
+            <div class="device-list" id="random-devices">
+                <!-- Random devices will be shown here -->
+            </div>
+        </div>
+        
+        <div class="demo-section">
+            <h3>📋 Discovery Log</h3>
+            <div id="log" class="log"></div>
+        </div>
+    </div>
+
+    <script>
+        // Simulate various Bluetooth devices
+        const allDevices = [
+            // Physical app users
+            {
+                id: 'user1',
+                name: 'Alex',
+                type: 'physical-app',
+                device: 'iPhone 15',
+                interests: ['music', 'travel', 'photography'],
+                age: 24,
+                distance: 8.5
+            },
+            {
+                id: 'user2', 
+                name: 'Jordan',
+                type: 'physical-app',
+                device: 'Samsung Galaxy S24',
+                interests: ['fitness', 'gaming', 'movies'],
+                age: 28,
+                distance: 12.3
+            },
+            {
+                id: 'user3',
+                name: 'Casey',
+                type: 'physical-app', 
+                device: 'Google Pixel 8',
+                interests: ['art', 'food', 'hiking'],
+                age: 26,
+                distance: 5.7
+            },
+            // Random Bluetooth devices (should be ignored)
+            {
+                id: 'device1',
+                name: 'AirPods Pro',
+                type: 'random-bluetooth',
+                device: 'Apple AirPods',
+                interests: null,
+                age: null,
+                distance: 2.1
+            },
+            {
+                id: 'device2',
+                name: 'Sony WH-1000XM5',
+                type: 'random-bluetooth',
+                device: 'Sony Headphones',
+                interests: null,
+                age: null,
+                distance: 15.8
+            },
+            {
+                id: 'device3',
+                name: 'Fitbit Charge 5',
+                type: 'random-bluetooth',
+                device: 'Fitbit',
+                interests: null,
+                age: null,
+                distance: 1.2
+            },
+            {
+                id: 'device4',
+                name: 'MacBook Pro',
+                type: 'random-bluetooth',
+                device: 'Apple MacBook',
+                interests: null,
+                age: null,
+                distance: 3.4
+            },
+            {
+                id: 'device5',
+                name: 'Tesla Model 3',
+                type: 'random-bluetooth',
+                device: 'Tesla Vehicle',
+                interests: null,
+                age: null,
+                distance: 25.6
+            }
+        ];
+
+        function addLog(message) {
+            const log = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            log.innerHTML += `[${timestamp}] ${message}\n`;
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function createDeviceCard(device) {
+            const card = document.createElement('div');
+            card.className = `device-card ${device.type === 'physical-app' ? 'physical-app-user' : 'random-device'}`;
+            
+            const typeLabel = device.type === 'physical-app' ? 'Physical App User' : 'Random Bluetooth Device';
+            const typeClass = device.type === 'physical-app' ? 'physical-app' : 'random-bluetooth';
+            
+            card.innerHTML = `
+                <div class="device-name">${device.name}</div>
+                <div class="device-type ${typeClass}">${typeLabel}</div>
+                <div>Device: ${device.device}</div>
+                <div>Distance: ${device.distance}m</div>
+                ${device.interests ? `<div>Interests: ${device.interests.join(', ')}</div>` : ''}
+                ${device.age ? `<div>Age: ${device.age}</div>` : ''}
+            `;
+            
+            return card;
+        }
+
+        function simulateDiscovery() {
+            addLog('🔍 Starting Bluetooth discovery...');
+            
+            // Clear previous results
+            document.getElementById('physical-app-users').innerHTML = '';
+            document.getElementById('random-devices').innerHTML = '';
+            
+            let physicalAppCount = 0;
+            let randomDeviceCount = 0;
+            
+            // Simulate discovering devices one by one
+            allDevices.forEach((device, index) => {
+                setTimeout(() => {
+                    if (device.type === 'physical-app') {
+                        // Physical app user - will appear in swipe stack
+                        document.getElementById('physical-app-users').appendChild(createDeviceCard(device));
+                        addLog(`✅ Physical app user discovered: ${device.name} (${device.distance}m away)`);
+                        physicalAppCount++;
+                    } else {
+                        // Random Bluetooth device - will be ignored
+                        document.getElementById('random-devices').appendChild(createDeviceCard(device));
+                        addLog(`🚫 Random Bluetooth device ignored: ${device.name} (${device.distance}m away)`);
+                        randomDeviceCount++;
+                    }
+                }, index * 500); // Stagger the discoveries
+            });
+            
+            setTimeout(() => {
+                addLog(`📊 Discovery complete: ${physicalAppCount} Physical app users, ${randomDeviceCount} random devices ignored`);
+                addLog('💡 Only Physical app users will appear in the swipe stack!');
+            }, allDevices.length * 500 + 1000);
+        }
+
+        function clearResults() {
+            document.getElementById('physical-app-users').innerHTML = '';
+            document.getElementById('random-devices').innerHTML = '';
+            document.getElementById('log').innerHTML = '';
+            addLog('Results cleared');
+        }
+
+        // Initial log
+        addLog('Physical app filtering demo loaded');
+        addLog('Click "Simulate Bluetooth Discovery" to see how filtering works');
+    </script>
+</body>
+</html>

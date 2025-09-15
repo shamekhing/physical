@@ -38,6 +38,11 @@ class UIManager {
         this.populateEditForm();
     }
 
+    showMessagesScreen() {
+        this.showScreen('messages');
+        this.populateMessagesList();
+    }
+
     showMainScreen() {
         this.showScreen('main');
         // Show discovery section, hide chat (default view)
@@ -251,6 +256,97 @@ class UIManager {
         if (ageInput) ageInput.value = profile.age;
         if (interestsInput) interestsInput.value = Array.isArray(profile.interests) ? profile.interests.join(', ') : profile.interests;
         if (availabilitySelect) availabilitySelect.value = profile.availability;
+    }
+
+    populateMessagesList() {
+        const messagesList = document.getElementById('messages-list');
+        const noMessages = document.getElementById('no-messages');
+        
+        if (!messagesList || !noMessages) return;
+
+        const likedUsers = Utils.storage.get('likedUsers') || [];
+        
+        if (likedUsers.length === 0) {
+            messagesList.style.display = 'none';
+            noMessages.style.display = 'flex';
+            return;
+        }
+
+        messagesList.style.display = 'block';
+        noMessages.style.display = 'none';
+
+        messagesList.innerHTML = likedUsers.map(user => `
+            <div class="message-conversation" data-user-id="${user.id}">
+                <div class="conversation-avatar">${this.getUserAvatar(user)}</div>
+                <div class="conversation-info">
+                    <div class="conversation-name">${user.username}</div>
+                    <div class="conversation-preview">
+                        ${user.lastMessage || 'Start a conversation...'}
+                    </div>
+                </div>
+                <div class="conversation-meta">
+                    <div class="conversation-time">${Utils.formatTime(user.likedAt)}</div>
+                    <div class="conversation-status ${this.getUserStatus(user)}"></div>
+                </div>
+            </div>
+        `).join('');
+
+        // Add click handlers for conversations
+        messagesList.querySelectorAll('.message-conversation').forEach(conversation => {
+            conversation.addEventListener('click', () => {
+                const userId = conversation.dataset.userId;
+                this.startChatWithUser(userId);
+            });
+        });
+    }
+
+    getUserAvatar(user) {
+        const avatars = ['👤', '🧑', '👩', '🧑‍💼', '👩‍💼', '🧑‍🎨', '👩‍🎨', '🧑‍🔬', '👩‍🔬'];
+        const hash = user.id.split('').reduce((a, b) => a + b.charCodeAt(0), 0);
+        return avatars[hash % avatars.length];
+    }
+
+    getUserStatus(user) {
+        // Simple status based on last seen time
+        const now = Date.now();
+        const lastSeen = user.lastSeen || user.likedAt;
+        const timeDiff = now - lastSeen;
+        
+        if (timeDiff < 5 * 60 * 1000) { // 5 minutes
+            return 'online';
+        } else if (timeDiff < 30 * 60 * 1000) { // 30 minutes
+            return 'away';
+        } else {
+            return 'offline';
+        }
+    }
+
+    startChatWithUser(userId) {
+        const likedUsers = Utils.storage.get('likedUsers') || [];
+        const user = likedUsers.find(u => u.id === userId);
+        
+        if (user) {
+            // Show the chat section
+            this.showChatSection(user);
+        }
+    }
+
+    showChatSection(user) {
+        // Hide discovery section and show chat section
+        const discoverySection = document.getElementById('discovery-section');
+        const chatSection = document.getElementById('chat-section');
+        
+        if (discoverySection) discoverySection.style.display = 'none';
+        if (chatSection) {
+            chatSection.style.display = 'flex';
+            
+            // Update chat header
+            const chatUserName = document.getElementById('chat-user-name');
+            const chatUserDistance = document.getElementById('chat-user-distance');
+            
+            if (chatUserName) chatUserName.textContent = user.username;
+            if (chatUserDistance) chatUserDistance.textContent = Utils.formatDistance(user.distance) + ' away';
+        }
     }
 }
 

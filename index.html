@@ -18,12 +18,12 @@
     <link rel="apple-touch-icon" href="assets/icon.png">
     
     <!-- Styles -->
-    <link rel="stylesheet" href="shared/styles.css?v=2">
-    <link rel="stylesheet" href="features/ui/ui.css?v=2">
-    <link rel="stylesheet" href="features/profiles/profiles.css?v=2">
-    <link rel="stylesheet" href="features/proximity/proximity.css?v=2">
-    <link rel="stylesheet" href="features/discovery/discovery.css?v=2">
-    <link rel="stylesheet" href="features/messaging/messaging.css?v=2">
+    <link rel="stylesheet" href="shared/styles.css?v=3">
+    <link rel="stylesheet" href="features/ui/ui.css?v=3">
+    <link rel="stylesheet" href="features/profiles/profiles.css?v=3">
+    <link rel="stylesheet" href="features/proximity/proximity.css?v=3">
+    <link rel="stylesheet" href="features/discovery/discovery.css?v=3">
+    <link rel="stylesheet" href="features/messaging/messaging.css?v=3">
 </head>
 <body>
     <div id="app">
@@ -118,6 +118,7 @@
                 </div>
                 <div class="header-controls">
                     <button id="proximity-toggle" class="btn-icon proximity-btn" data-tooltip="Start Bluetooth scanning to find nearby users">📡</button>
+                    <button id="messages-btn" class="btn-icon messages-btn" data-tooltip="View your messages">💬</button>
                     <button id="profile-btn" class="btn-icon" data-tooltip="View profile settings">👤</button>
                 </div>
             </header>
@@ -177,21 +178,47 @@
                 </div>
             </div>
         </div>
+
+        <!-- Messages Screen -->
+        <div id="messages-screen" class="screen">
+            <header class="app-header">
+                <div class="header-title">
+                    <h1>Messages</h1>
+                    <p class="subtitle">Your conversations</p>
+                </div>
+                <div class="header-controls">
+                    <button id="back-to-main-from-messages" class="btn-icon" data-tooltip="Back to main">←</button>
+                </div>
+            </header>
+
+            <div class="messages-container">
+                <div id="messages-list" class="messages-list">
+                    <!-- List of conversations will be populated here -->
+                </div>
+                <div id="no-messages" class="no-messages" style="display: none;">
+                    <div class="no-messages-content">
+                        <h3>No messages yet</h3>
+                        <p>Start swiping to find people you like and begin conversations!</p>
+                        <button id="start-swiping-btn" class="btn-primary">Start Swiping</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Scripts -->
-    <script src="shared/utils.js?v=20250915175900"></script>
-    <script src="features/ui/ui-manager.js?v=20250915175900"></script>
-    <script src="features/encryption/encryption.js?v=20250915175900"></script>
-    <script src="features/profiles/profiles.js?v=20250915175900"></script>
-    <script src="features/profiles/profile-manager.js?v=20250915175900"></script>
-    <script src="features/proximity/proximity.js?v=20250915175900"></script>
-    <script src="features/proximity/proximity-manager.js?v=20250915175900"></script>
-    <script src="features/discovery/discovery.js?v=20250915175900"></script>
-    <script src="features/discovery/discovery-manager.js?v=20250915175900"></script>
-    <script src="features/discovery/swipe-manager.js?v=20250915175900"></script>
-    <script src="features/messaging/messaging.js?v=20250915175900"></script>
-    <script src="features/messaging/messaging-manager.js?v=20250915175900"></script>
-    <script src="app.js?v=20250915175900"></script>
+    <script src="shared/utils.js?v=20250915183200"></script>
+    <script src="features/ui/ui-manager.js?v=20250915183200"></script>
+    <script src="features/encryption/encryption.js?v=20250915183200"></script>
+    <script src="features/profiles/profiles.js?v=20250915183200"></script>
+    <script src="features/profiles/profile-manager.js?v=20250915183200"></script>
+    <script src="features/proximity/proximity.js?v=20250915183200"></script>
+    <script src="features/proximity/proximity-manager.js?v=20250915183200"></script>
+    <script src="features/discovery/discovery.js?v=20250915183200"></script>
+    <script src="features/discovery/discovery-manager.js?v=20250915183200"></script>
+    <script src="features/discovery/swipe-manager.js?v=20250915183200"></script>
+    <script src="features/messaging/messaging.js?v=20250915183200"></script>
+    <script src="features/messaging/messaging-manager.js?v=20250915183200"></script>
+    <script src="app.js?v=20250915183200"></script>
 </body>
 </html>

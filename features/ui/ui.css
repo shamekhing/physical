@@ -4,10 +4,12 @@
 .screen {
     display: none;
     min-height: 100vh;
+    height: 100vh;
     padding: var(--space-lg);
     background: var(--background-color);
     position: relative;
-    overflow: hidden;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .screen.active {

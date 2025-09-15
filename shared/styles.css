@@ -79,6 +79,12 @@
     --transition-bounce: 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Helvetica, Arial, sans-serif;
     background-color: var(--background-color);

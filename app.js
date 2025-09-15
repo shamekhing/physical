@@ -161,6 +161,13 @@ class PhysicalApp {
             });
         }
 
+        const messagesBtn = document.getElementById('messages-btn');
+        if (messagesBtn && window.UIManager) {
+            messagesBtn.addEventListener('click', () => {
+                window.UIManager.showMessagesScreen();
+            });
+        }
+
         // Proximity radius change
         const proximityRadius = document.getElementById('proximity-radius');
         if (proximityRadius && window.ProximityManager) {
@@ -240,6 +247,16 @@ class PhysicalApp {
         const backToMainBtn = document.getElementById('back-to-main-btn');
         if (backToMainBtn && window.UIManager) {
             backToMainBtn.addEventListener('click', () => window.UIManager.showMainScreen());
+        }
+
+        const backToMainFromMessages = document.getElementById('back-to-main-from-messages');
+        if (backToMainFromMessages && window.UIManager) {
+            backToMainFromMessages.addEventListener('click', () => window.UIManager.showMainScreen());
+        }
+
+        const startSwipingBtn = document.getElementById('start-swiping-btn');
+        if (startSwipingBtn && window.UIManager) {
+            startSwipingBtn.addEventListener('click', () => window.UIManager.showMainScreen());
         }
 
         const cancelEditBtn = document.getElementById('cancel-edit-btn');

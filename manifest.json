@@ -1,0 +1,35 @@
+{
+  "name": "Physical",
+  "short_name": "Physical",
+  "description": "Physical - Meet people nearby with Bluetooth proximity detection",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#ff6b6b",
+  "orientation": "portrait",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "assets/icon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "categories": ["social", "lifestyle"],
+  "screenshots": [],
+  "features": [
+    "bluetooth",
+    "webrtc",
+    "encryption"
+  ],
+  "permissions": [
+    "bluetooth",
+    "camera",
+    "microphone"
+  ]
+}

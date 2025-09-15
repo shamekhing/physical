@@ -1,0 +1,331 @@
+/* UI Feature Styles */
+
+/* Screen Management - Apple-like */
+.screen {
+    display: none;
+    min-height: 100vh;
+    padding: var(--space-lg);
+    background: var(--background-color);
+    position: relative;
+    overflow: hidden;
+}
+
+.screen.active {
+    display: block;
+    animation: screenFadeIn var(--transition-normal) ease-out;
+}
+
+@keyframes screenFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Loading Screen - Apple-like */
+#loading-screen {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: var(--background-color);
+    position: relative;
+}
+
+#loading-screen.active {
+    display: flex;
+    animation: loadingFadeIn var(--transition-slow) ease-out;
+}
+
+@keyframes loadingFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.loading-container {
+    text-align: center;
+}
+
+.loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 3px solid var(--border-color);
+    border-top: 3px solid var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading-container h1 {
+    font-size: 2.5rem;
+    margin-bottom: 5px;
+    background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.subtitle {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+    font-style: italic;
+    letter-spacing: 1px;
+}
+
+.loading-container p {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+}
+
+/* Header - Apple-like */
+.app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-lg) 0;
+    border-bottom: 1px solid var(--separator);
+    margin-bottom: var(--space-xl);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(248, 249, 250, 0.9);
+}
+
+.header-title {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.app-header h1 {
+    font-size: 1.8rem;
+    background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 0;
+}
+
+.header-title .subtitle {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    font-style: italic;
+    letter-spacing: 0.5px;
+    margin: 0;
+}
+
+.header-controls {
+    display: flex;
+    gap: 10px;
+}
+
+/* Enhanced Button Styles */
+.btn-icon {
+    position: relative;
+    transition: all 0.3s ease;
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2em;
+}
+
+.btn-icon:hover {
+    background: var(--surface-color);
+    transform: scale(1.1);
+    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+}
+
+.btn-icon:active {
+    transform: scale(0.95);
+}
+
+/* Proximity button styling - Apple-like */
+.proximity-btn {
+    background: var(--primary-color) !important;
+    color: white !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    box-shadow: var(--shadow-medium) !important;
+    border-radius: var(--radius-full) !important;
+    width: 60px !important;
+    height: 60px !important;
+    padding: 0 !important;
+    position: relative !important;
+    overflow: hidden !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    animation: proximityPulse 3s ease-in-out infinite;
+}
+
+.proximity-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transform: translateX(-100%);
+    transition: transform 0.6s ease;
+}
+
+.proximity-btn:hover::before {
+    transform: translateX(100%);
+}
+
+.proximity-btn:hover {
+    transform: translateY(-2px) scale(1.05) !important;
+    box-shadow: var(--shadow-large) !important;
+    background: var(--primary-hover) !important;
+}
+
+.proximity-btn:active {
+    transform: translateY(0) scale(0.98) !important;
+    box-shadow: var(--shadow-small) !important;
+}
+
+.proximity-btn.scanning {
+    background: var(--success-color) !important;
+    box-shadow: 0 0 15px rgba(52, 199, 89, 0.4) !important;
+    animation: scanningPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes proximityPulse {
+    0%, 100% {
+        box-shadow: var(--shadow-medium), 0 0 0 0 rgba(0, 122, 255, 0.3);
+    }
+    50% {
+        box-shadow: var(--shadow-medium), 0 0 0 8px rgba(0, 122, 255, 0);
+    }
+}
+
+@keyframes scanningPulse {
+    0%, 100% {
+        box-shadow: 0 0 15px rgba(52, 199, 89, 0.4), 0 0 0 0 rgba(52, 199, 89, 0.3);
+    }
+    50% {
+        box-shadow: 0 0 15px rgba(52, 199, 89, 0.4), 0 0 0 8px rgba(52, 199, 89, 0);
+    }
+}
+
+/* Tooltip Styles */
+[data-tooltip] {
+    position: relative;
+    cursor: help;
+}
+
+[data-tooltip]:hover::before {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--surface-color);
+    color: var(--text-color);
+    padding: 8px 12px;
+    border-radius: var(--border-radius);
+    font-size: 0.85em;
+    white-space: nowrap;
+    z-index: 1000;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-color);
+    margin-bottom: 5px;
+    opacity: 0;
+    animation: tooltipFadeIn 0.3s ease forwards;
+}
+
+[data-tooltip]:hover::after {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: var(--surface-color);
+    z-index: 1000;
+    opacity: 0;
+    animation: tooltipFadeIn 0.3s ease forwards;
+}
+
+@keyframes tooltipFadeIn {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+/* Loading States */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid var(--border-color);
+    border-top-color: var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+/* Enhanced Animations */
+.screen {
+    animation: screenSlideIn 0.4s ease-out;
+}
+
+@keyframes screenSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Mobile Enhancements */
+@media (max-width: 768px) {
+    .btn-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.1em;
+    }
+    
+    [data-tooltip]:hover::before {
+        font-size: 0.9em;
+        padding: 10px 14px;
+        white-space: normal;
+        max-width: 200px;
+        text-align: center;
+    }
+}

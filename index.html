@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Physical</title>
+    <meta name="description" content="Physical - Meet people nearby with Bluetooth proximity detection">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#F8F9FA">
+    
+    <!-- Icons -->
+    <link rel="icon" href="assets/icon.png">
+    <link rel="apple-touch-icon" href="assets/icon.png">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="shared/styles.css?v=2">
+    <link rel="stylesheet" href="features/ui/ui.css?v=2">
+    <link rel="stylesheet" href="features/profiles/profiles.css?v=2">
+    <link rel="stylesheet" href="features/proximity/proximity.css?v=2">
+    <link rel="stylesheet" href="features/discovery/discovery.css?v=2">
+    <link rel="stylesheet" href="features/messaging/messaging.css?v=2">
+</head>
+<body>
+    <div id="app">
+        <!-- Loading Screen -->
+        <div id="loading-screen" class="screen active">
+            <div class="loading-container">
+                <div class="loading-spinner"></div>
+                <h1>Physical</h1>
+                <p class="subtitle">Nothing Between</p>
+                <p>Initializing secure connection...</p>
+            </div>
+        </div>
+
+        <!-- Profile Setup Screen -->
+        <div id="profile-screen" class="screen">
+            <div class="profile-container">
+                <h2>Create Your Profile</h2>
+                <form id="profile-form">
+                    <div class="form-group">
+                        <label for="age" data-tooltip="Enter your age">Age</label>
+                        <input type="number" id="age" min="13" max="99" required data-tooltip="Enter your age">
+                    </div>
+                    <div class="form-group">
+                        <label for="interests" data-tooltip="Separate multiple interests with commas">Interests (comma separated)</label>
+                        <input type="text" id="interests" placeholder="music, sports, movies" data-tooltip="What are you interested in? This helps with matching">
+                    </div>
+                    <div class="form-group">
+                        <label for="availability" data-tooltip="When are you typically available?">Availability</label>
+                        <select id="availability" data-tooltip="Select your typical availability">
+                            <option value="now">Available Now</option>
+                            <option value="tonight">Tonight</option>
+                            <option value="weekend">This Weekend</option>
+                            <option value="flexible">Flexible</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-primary">Create Profile</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Main App Screen -->
+        <div id="main-screen" class="screen">
+            <header class="app-header">
+                <div class="header-title">
+                    <h1>Physical</h1>
+                    <p class="subtitle">Nothing Between</p>
+                </div>
+                <div class="header-controls">
+                    <button id="proximity-toggle" class="btn-icon proximity-btn" data-tooltip="Start Bluetooth scanning to find nearby users">📡</button>
+                    <button id="profile-btn" class="btn-icon" data-tooltip="View profile settings">👤</button>
+                </div>
+            </header>
+
+            <!-- Proximity Status -->
+            <div id="proximity-status" class="proximity-status">
+                <div class="status-indicator">
+                    <span class="status-dot"></span>
+                    <span class="status-text">Click the 📡 button to start scanning for nearby users</span>
+                </div>
+                <div class="proximity-controls">
+                    <label for="proximity-radius" data-tooltip="Adjust scanning range">Range:</label>
+                    <select id="proximity-radius" data-tooltip="Choose how far to scan for nearby users">
+                        <option value="5">5m</option>
+                        <option value="10" selected>10m</option>
+                        <option value="20">20m</option>
+                        <option value="50">50m</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Discovery Section -->
+            <div id="discovery-section" class="discovery-section">
+                <h3>Swipe to Meet People Nearby</h3>
+                <div id="swipe-container" class="swipe-container">
+                    <div id="swipe-stack" class="swipe-stack">
+                        <!-- User cards will be populated here for swiping -->
+                    </div>
+                    <div class="swipe-actions">
+                        <button id="swipe-pass" class="swipe-btn pass-btn" data-tooltip="Pass on this person">❌</button>
+                        <button id="swipe-like" class="swipe-btn like-btn" data-tooltip="Like this person">❤️</button>
+                    </div>
+                </div>
+                <div id="nearby-users" class="users-list" style="display: none;">
+                    <!-- Fallback list view -->
+                </div>
+            </div>
+
+            <!-- Chat Section -->
+            <div id="chat-section" class="chat-section">
+                <div id="chat-header" class="chat-header">
+                    <button id="back-to-discovery" class="btn-back">← Back</button>
+                    <div class="chat-user-info">
+                        <span id="chat-user-name">Anonymous User</span>
+                        <span id="chat-user-distance">5m away</span>
+                    </div>
+                </div>
+                <div id="chat-messages" class="chat-messages">
+                    <!-- Messages will be populated here -->
+                </div>
+                <div class="chat-input-container">
+                    <input type="text" id="message-input" placeholder="Type a message or use /help for commands..." data-tooltip="Type messages or use IRC-style commands like /who, /clear, /help">
+                    <button id="send-message" class="btn-send" data-tooltip="Send message">Send</button>
+                    <div class="command-hint">
+                        💡 Try: /who, /clear, /help
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="shared/utils.js"></script>
+    <script src="features/ui/ui-manager.js"></script>
+    <script src="features/encryption/encryption.js"></script>
+    <script src="features/profiles/profiles.js"></script>
+    <script src="features/profiles/profile-manager.js"></script>
+    <script src="features/proximity/proximity.js"></script>
+    <script src="features/proximity/proximity-manager.js"></script>
+    <script src="features/discovery/discovery.js"></script>
+    <script src="features/discovery/discovery-manager.js"></script>
+    <script src="features/discovery/swipe-manager.js"></script>
+    <script src="features/messaging/messaging.js"></script>
+    <script src="features/messaging/messaging-manager.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

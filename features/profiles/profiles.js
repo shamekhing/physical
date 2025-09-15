@@ -55,7 +55,7 @@ class Profiles {
                 username: Utils.generateUsername(),
                 age: profileData.age,
                 ageProof: ageProof,
-                interests: profileData.interests,
+                interests: profileData.interests.split(',').map(i => i.trim()).filter(i => i),
                 availability: profileData.availability,
                 reputation: 1000, // Starting ELO score
                 createdAt: Date.now(),

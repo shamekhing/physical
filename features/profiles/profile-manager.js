@@ -43,9 +43,10 @@ class ProfileManager {
         
         try {
             const formData = new FormData(event.target);
+            const interestsString = document.getElementById('interests').value;
             const profileData = {
                 age: parseInt(document.getElementById('age').value),
-                interests: document.getElementById('interests').value.split(',').map(i => i.trim()).filter(i => i),
+                interests: interestsString,
                 availability: document.getElementById('availability').value
             };
 
@@ -54,7 +55,7 @@ class ProfileManager {
                 throw new Error('Age must be between 13 and 99');
             }
 
-            if (profileData.interests.length === 0) {
+            if (!interestsString || interestsString.trim().length === 0) {
                 throw new Error('Please enter at least one interest');
             }
 
@@ -74,7 +75,7 @@ class ProfileManager {
                     id: Utils.generateId(),
                     username: Utils.generateUsername(),
                     age: profileData.age,
-                    interests: profileData.interests,
+                    interests: profileData.interests.split(',').map(i => i.trim()).filter(i => i),
                     availability: profileData.availability,
                     createdAt: Date.now(),
                     reputation: 1000 // Starting ELO score

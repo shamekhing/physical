@@ -36,6 +36,11 @@ class Messaging {
         Utils.events.on('user-matched', (user) => {
             this.handleUserMatched(user);
         });
+        
+        // Listen for Bluetooth messages
+        Utils.events.on('message-received', (messageData) => {
+            this.handleBluetoothMessage(messageData);
+        });
     }
 
     async handleUserMatched(user) {
@@ -49,6 +54,59 @@ class Messaging {
             
         } catch (error) {
             console.error('❌ Failed to handle user match:', error);
+        }
+    }
+
+    // Handle messages received via Bluetooth
+    async handleBluetoothMessage(messageData) {
+        try {
+            console.log('📨 Received Bluetooth message:', messageData);
+            
+            // Extract message details
+            const { from, to, message, timestamp } = messageData;
+            
+            // Check if this message is for us
+            const currentProfile = window.Profiles ? window.Profiles.getCurrentProfile() : null;
+            if (!currentProfile || to !== currentProfile.id) {
+                return; // Message not for us
+            }
+            
+            // Start chat with sender if not already active
+            if (!this.activeChats.has(from)) {
+                await this.startChat(from);
+            }
+            
+            // Add message to chat history
+            this.addMessageToHistory(from, {
+                id: Utils.generateId(),
+                content: message,
+                sender: from,
+                recipient: to,
+                timestamp: timestamp,
+                isReceived: true,
+                isBluetooth: true
+            });
+            
+            // Display message if this is the current chat
+            if (this.currentChatUserId === from) {
+                this.displayMessage({
+                    content: message,
+                    sender: from,
+                    timestamp: timestamp,
+                    isReceived: true,
+                    isBluetooth: true
+                });
+            }
+            
+            // Emit message received event
+            Utils.events.emit('message-received', {
+                from: from,
+                message: message,
+                timestamp: timestamp
+            });
+            
+        } catch (error) {
+            console.error('❌ Failed to handle Bluetooth message:', error);
         }
     }
 
@@ -154,8 +212,25 @@ class Messaging {
             // Display message in UI
             this.displayMessage(messageObj, true);
 
-            // Simulate sending via P2P (in real implementation, this would use WebRTC)
-            await this.simulateP2PSend(messageObj, userId);
+            // Try to send via Bluetooth first, then fall back to simulation
+            let sentViaBluetooth = false;
+            if (window.BluetoothManager) {
+                try {
+                    sentViaBluetooth = await window.BluetoothManager.sendMessage(userId, message);
+                    if (sentViaBluetooth) {
+                        messageObj.isBluetooth = true;
+                        console.log('📤 Message sent via Bluetooth');
+                    }
+                } catch (error) {
+                    console.log('⚠️ Bluetooth send failed, using fallback:', error.message);
+                }
+            }
+            
+            // If Bluetooth failed, use fallback (simulated sending)
+            if (!sentViaBluetooth) {
+                await this.simulateP2PSend(messageObj, userId);
+                messageObj.isSimulated = true;
+            }
 
             console.log(`💬 Message sent to ${chat.username}: ${message}`);
             

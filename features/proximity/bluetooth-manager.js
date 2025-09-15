@@ -40,13 +40,13 @@ class BluetoothManager {
         }
     }
 
-    // Request Bluetooth permission for scanning only (no pairing)
+    // Request Bluetooth permission for discovery and messaging (no permanent pairing)
     async requestBluetoothPermission() {
         try {
-            console.log('📱 Requesting Bluetooth scanning permission...');
+            console.log('📱 Requesting Bluetooth permission for discovery and messaging...');
             
-            // Request permission to scan for devices with our specific service
-            // This won't pair with devices, just allows scanning
+            // Request permission to use Bluetooth for discovery and messaging
+            // This allows us to advertise, scan, and make temporary connections
             const device = await navigator.bluetooth.requestDevice({
                 filters: [{
                     services: [PHYSICAL_SERVICE_UUID]
@@ -61,7 +61,7 @@ class BluetoothManager {
                 this.handleDeviceDisconnected();
             });
 
-            console.log('✅ Bluetooth scanning permission granted');
+            console.log('✅ Bluetooth permission granted for discovery and messaging');
             return true;
             
         } catch (error) {
@@ -394,39 +394,41 @@ class BluetoothManager {
         }
     }
 
-    // Connect to a specific device
+    // Make temporary connection to device for messaging (not permanent pairing)
     async connectToDevice(deviceId) {
         try {
-            console.log('🔗 Connecting to device:', deviceId);
+            console.log('🔗 Making temporary connection to device:', deviceId);
             
             const device = this.discoveredDevices.get(deviceId);
             if (!device) {
                 throw new Error('Device not found');
             }
             
-            // In a real implementation, this would establish a GATT connection
-            // For now, we'll simulate the connection
+            // In a real implementation, this would make a temporary GATT connection
+            // for messaging, then disconnect after sending/receiving
             this.connectedDevices.set(deviceId, {
                 ...device,
                 connected: true,
-                connectedAt: Date.now()
+                connectedAt: Date.now(),
+                isTemporaryConnection: true // Mark as temporary
             });
             
-            console.log('✅ Connected to device:', device.username);
+            console.log('✅ Temporary connection established to:', device.username);
             return true;
             
         } catch (error) {
-            console.error('❌ Failed to connect to device:', error);
+            console.error('❌ Failed to make temporary connection:', error);
             return false;
         }
     }
 
-    // Send message to connected device
+    // Send message via temporary Bluetooth connection
     async sendMessage(deviceId, message) {
         try {
             const device = this.connectedDevices.get(deviceId);
             if (!device || !device.connected) {
-                throw new Error('Device not connected');
+                // Make temporary connection if not already connected
+                await this.connectToDevice(deviceId);
             }
             
             const messageData = {
@@ -441,10 +443,15 @@ class BluetoothManager {
             if (messageChar) {
                 const data = new TextEncoder().encode(JSON.stringify(messageData));
                 await messageChar.writeValue(data);
-                console.log('📤 Message sent via Bluetooth:', message);
+                console.log('📤 Message sent via temporary Bluetooth connection:', message);
             } else {
                 console.log('📤 Message sent (fallback):', message);
             }
+            
+            // Disconnect after sending (temporary connection)
+            setTimeout(() => {
+                this.disconnectFromDevice(deviceId);
+            }, 1000); // Disconnect after 1 second
             
             return true;
             
